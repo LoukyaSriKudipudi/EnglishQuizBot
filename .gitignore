@@ -1,0 +1,8 @@
+node_modules/
+.env
+*.log
+store
+localDB
+admin_report.json
+checkAdminManual.js
+notes.js
