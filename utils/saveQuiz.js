@@ -102,6 +102,7 @@ async function saveQuiz(
         nextLeaderboardTime: isGroupOrChannel
           ? getRandomLeaderboardTimeIST()
           : null,
+        quizIndex: Math.floor(Math.random() * 150),
       });
 
       await chat.save();

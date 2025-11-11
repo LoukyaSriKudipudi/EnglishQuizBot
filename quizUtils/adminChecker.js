@@ -25,24 +25,24 @@ async function checkAndNotifyAdminStatus(chat, botId) {
     if (!botIsAdmin) {
       console.log(`🚫 [NOT ADMIN] Bot is NOT admin in: "${groupName}"`);
 
-      chat.quizEnabled = false;
-      chat.canSend = false;
-      chat.nextQuizTime = null;
+      chat.sendLeaderboard = false;
+      chat.showMyScoreInGroup = false;
+      chat.deleteOldQuizzes = true;
+      chat.nextLeaderboardTime = null;
+      chat.quizFrequencyMinutes = 180;
       await chat.save();
 
       try {
         await bot.telegram.sendMessage(
           chatId,
-          `<b>⚠️ Attention!</b>\n` +
-            `<blockquote>@EnglishByLoukyaBot isn’t an admin in this group 🤖💬</blockquote>\n\n` +
-            `❌ <b>Quizzes are paused.</b>\n\n` +
-            `<blockquote>✅ Make me an admin and run /startquiz@EnglishByLoukyaBot to resume.</blockquote>\n\n` +
-            `<b>⚙️ Once I’m admin, use</b> /settings@EnglishByLoukyaBot <b>to manage features like:</b>\n` +
-            `<blockquote>` +
-            `• Auto quiz intervals ⏱️\n` +
-            `• Auto-delete old quizzes 🗑\n` +
-            `• Show /myscore in group 📊\n` +
-            `• Daily leaderboard 📈` +
+          `<blockquote>` +
+            `<b>⚠️ Limited Functionality Notice</b>\n\n` +
+            `@EnglishByLoukyaBot isn’t an admin in this group.\n\n` +
+            `Some features that need admin rights have been turned off:\n` +
+            `• Group leaderboard 📈\n` +
+            `⏱️ Quiz frequency has been increased to <b>every 3 hours</b> for smoother operation.\n\n` +
+            `✅ Quizzes and facts will continue as usual.\n\n` +
+            `➡️ Make me admin and use /settings@EnglishByLoukyaBot to restore full functionality.` +
             `</blockquote>`,
           { parse_mode: "HTML" }
         );
@@ -52,8 +52,10 @@ async function checkAndNotifyAdminStatus(chat, botId) {
           err.message.includes("kicked") ||
           err.message.includes("chat not found")
         ) {
-          chat.quizEnabled = false;
-          chat.canSend = false;
+          chat.sendLeaderboard = false;
+          chat.showMyScoreInGroup = false;
+          chat.deleteOldQuizzes = true;
+          chat.nextLeaderboardTime = null;
           await chat.save();
           console.warn(
             `🚷 Disabled restricted or removed group: "${groupName}"`
@@ -92,7 +94,7 @@ async function runWeeklyAdminCheck() {
     const botInfo = await bot.telegram.getMe();
     const botId = botInfo.id;
 
-    // ✅ Select all group chats (exclude private messages)
+    // ✅ Only select groups (negative chatIds)
     const chats = await Chat.find({ chatId: { $lt: 0 } });
 
     console.log(`📊 Found ${chats.length} groups to check.\n`);

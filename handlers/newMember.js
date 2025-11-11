@@ -4,6 +4,7 @@ const { message } = require("telegraf/filters");
 const bot = require("../utils/telegramBot");
 const eventRecordBot = require("../utils/eventRecordBot");
 const Chat = require("../models/chats");
+const { Markup } = require("telegraf");
 
 // Utility function to check if user started the bot
 async function hasUserStartedBot(userId) {
@@ -61,6 +62,22 @@ module.exports = () => {
       const safeChatTitle = escapeMarkdown(chatTitle);
       const safeAddedByName = escapeMarkdown(addedByName);
       const safeAddedByUsername = escapeMarkdown(addedByUsername);
+      // ✅ Only add link if public (has username)
+      const publicLink = ctx.chat?.username
+        ? `https://t.me/${ctx.chat.username}`
+        : null;
+
+      const MsgId = ctx.message?.message_id || null;
+
+      function estimateGroupAge(msgId) {
+        if (!Number.isInteger(msgId)) return "Unknown";
+        if (msgId < 100) return "Brand-new 🍼";
+        if (msgId < 500) return "New 🌱";
+        if (msgId < 2000) return "Growing 🌿";
+        return "Established 🌳";
+      }
+
+      const ageLabel = estimateGroupAge(MsgId);
 
       await eventRecordBot.telegram.sendMessage(
         process.env.EVENT_RECORD_NEW_START_ADD_GROUP_ID,
@@ -68,8 +85,13 @@ module.exports = () => {
           `• *Title:* \`${safeChatTitle}\`\n` +
           `• *ID:* \`${chatID}\`\n` +
           `• *Type:* ${chatType}` +
+          (publicLink
+            ? `\n• *Group Visibility:* Public\n• *Link:* ${publicLink}`
+            : `\n• *Group Visibility:* Private`) +
+          `\n• *Message ID:* \`${MsgId ?? "N/A"}\`` +
+          `\n• *Estimated Group Age:* ${ageLabel}` +
           (addedBy && addedBy.username !== "GroupAnonymousBot"
-            ? `\n\n👤 *Added by:* ${safeAddedByName} ${safeAddedByUsername}\n🆔 *User ID:* ${addedById}`
+            ? `\n\n👤 *Added by:* \`${safeAddedByName}\` ${safeAddedByUsername}\n🆔 *User ID:* ${addedById}`
             : ""),
         { parse_mode: "Markdown" }
       );
@@ -93,18 +115,52 @@ module.exports = () => {
             addedByMention
               ? "Thanks " + addedByMention + " for adding me to"
               : "Thanks for adding me to"
-          } *${safeChatTitle}*! 🥰\n\n` +
-            `⚠️ I need *admin privileges* to post quizzes. Quizzes are *paused at 9 AM* if I’m not an admin. Run */startquiz* once I’m made admin.\n\n` +
-            `🧠 I post quizzes 24/7 — perfect for practice and learning! 🚀\n\n` +
-            `⚙️ You can open */settings* in this group to manage quiz options:\n` +
-            `• Change *quiz interval*\n` +
-            `• *Enable or disable* old quiz deletion\n\n`,
-          { parse_mode: "Markdown" }
+          } *${safeChatTitle}*! 🌸\n\n` +
+            `🤖 I’ll share *quizzes 24/7* — perfect for daily practice and concept revision! 🚀\n\n` +
+            `⚙️ Please make me an *admin* to unlock full features (settings, leaderboard, and quiz control).\n\n` +
+            `⏱️ If quizzes ever stop, just use */startquiz* to resume.\n\n` +
+            `💡 Use */settings* to customize:\n` +
+            `• Quiz interval (1h, 2h, etc.)\n` +
+            `• Enable/Disable old quiz deletion\n\n` +
+            `📢 For updates, help & support — visit @LoukyaSri`,
+          {
+            parse_mode: "Markdown",
+            disable_web_page_preview: true,
+            ...Markup.inlineKeyboard([
+              [
+                Markup.button.url(
+                  "➕ Add Me to Another Group",
+                  `https://t.me/${ctx.botInfo.username}?startgroup&admin=promote_members+change_info+post_messages+edit_messages+delete_messages+invite_users+restrict_members+pin_messages+manage_video_chats+manage_topics`
+                ),
+              ],
+              [
+                Markup.button.url(
+                  "🌐 Visit Website",
+                  "https://loukyasri.netlify.app/"
+                ),
+                Markup.button.url("🤖 More Bots", "https://t.me/LoukyaSri"),
+              ],
+            ]),
+          }
         );
       } catch (err) {
-        console.warn(
-          "Cannot send welcome message. Bot might not have permission yet."
-        );
+        if (
+          err.response?.error_code === 400 ||
+          err.response?.error_code === 403 ||
+          err.message?.includes("not enough rights") ||
+          err.message?.includes("can't send messages to the chat") ||
+          err.message?.includes("CHAT_WRITE_FORBIDDEN") ||
+          err.message?.includes("chat_write_forbidden") ||
+          err.message?.includes("bot was blocked by the user") ||
+          err.message.includes("bot was kicked") ||
+          err.message.includes("kicked")
+        ) {
+          return;
+        } else {
+          console.log(
+            `Error sending welcome message: \n${err.stack}\n\n Error Message: \n${err.message}`
+          );
+        }
       }
     }, 1500);
 
@@ -120,10 +176,12 @@ module.exports = () => {
           await bot.telegram.sendMessage(
             addedBy.id,
             `👋 Hi *${safeAddedByName}*! Thanks for adding me to *${safeChatTitle}*.\n\n` +
-              `⚠️ I need *admin privileges* to post quizzes. Quizzes are *paused at 9 AM* if I’m not an admin. Run */startquiz* once I’m made admin.\n\n` +
+              `⚠️ I work best with *admin privileges*. Without them, I switch to *limited mode* — no settings, no leaderboard, and fewer features.\n\n` +
+              `⏱️ If quizzes ever stop, just use */startquiz* to resume.\n\n` +
               `⚙️ Open */settings in group* to manage quiz options:\n` +
               `• Default quiz interval: 1 hour\n` +
-              `• Old quiz deletion: Enabled`,
+              `• Old quiz deletion: Enabled\n\n` +
+              `📢 For *bot updates, tips & usage instructions*, visit @LoukyaSri`,
             { parse_mode: "Markdown" }
           );
 
@@ -132,9 +190,9 @@ module.exports = () => {
             await eventRecordBot.telegram.sendMessage(
               process.env.EVENT_RECORD_NEW_START_ADD_GROUP_ID,
               `📩 *Private DM Sent*\n` +
-                `• *User:* ${safeAddedByName} ${safeAddedByUsername}\n` +
+                `• *User:* \`${safeAddedByName}\` ${safeAddedByUsername}\n` +
                 `• *User ID:* \`${addedBy.id}\`\n` +
-                `• *Group:* ${safeChatTitle} (\`${chatID}\`)`,
+                `• *Group:* \`${safeChatTitle}\` (\`${chatID}\`)`,
               { parse_mode: "Markdown" }
             );
           } catch (err) {
@@ -146,9 +204,9 @@ module.exports = () => {
             await eventRecordBot.telegram.sendMessage(
               process.env.EVENT_RECORD_NEW_START_ADD_GROUP_ID,
               `⚠️ *DM Skipped*\n` +
-                `• *User:* ${safeAddedByName} ${safeAddedByUsername}\n` +
+                `• *User:* \`${safeAddedByName}\` ${safeAddedByUsername}\n` +
                 `• *User ID:* \`${addedBy.id}\`\n` +
-                `• *Group:* ${safeChatTitle} (\`${chatID}\`)\n` +
+                `• *Group:* \`${safeChatTitle}\` (\`${chatID}\`)\n` +
                 `• *Reason:* User has not started the bot yet.`,
               { parse_mode: "Markdown" }
             );
@@ -168,7 +226,7 @@ module.exports = () => {
         await eventRecordBot.telegram.sendMessage(
           process.env.EVENT_RECORD_NEW_START_ADD_GROUP_ID,
           `⚠️ *DM Skipped (Anonymous Admin)*\n` +
-            `• *Group:* ${safeChatTitle} (\`${chatID}\`)\n` +
+            `• *Group:* \`${safeChatTitle}\` (\`${chatID}\`)\n` +
             `• *Reason:* The user who added the bot is anonymous and cannot receive DMs.`,
           { parse_mode: "Markdown" }
         );

@@ -252,26 +252,56 @@ async function broadcastQuizQuestion() {
           ) {
             try {
               const migrateId = err.response.parameters?.migrate_to_chat_id;
+
               if (migrateId) {
-                chat.chatId = migrateId;
-                chat.nextQuizTime = new Date(Date.now() + 5 * 60 * 1000);
+                // 1️⃣ Disable the old chat record
+                chat.quizEnabled = false;
+                chat.canSend = false;
+                chat.nextQuizTime = null;
                 await chat.save();
-                logs.push(
-                  `♻️ Updated \`${escapeMarkdown(
-                    chatTitle
-                  )}\`: migrated to supergroup (${migrateId}), retry after 5 mins`
-                );
+
+                // 2️⃣ Create a new document for the migrated chat
+                const existingNewChat = await Chat.findOne({
+                  chatId: migrateId,
+                });
+
+                if (!existingNewChat) {
+                  const newChat = new Chat({
+                    chatId: migrateId,
+                    chatTitle: chat.chatTitle,
+                    quizEnabled: true,
+                    canSend: true,
+                    nextQuizTime: new Date(Date.now() + 5 * 60 * 1000),
+                    quizIndex: chat.quizIndex || 0,
+                    deleteOldQuizzes: chat.deleteOldQuizzes ?? true,
+                    quizFrequencyMinutes: chat.quizFrequencyMinutes ?? 60,
+                    nextLeaderboardTime: chat.nextLeaderboardTime,
+                  });
+
+                  await newChat.save();
+                  logs.push(
+                    `♻️ Created new migrated chat record for \`${escapeMarkdown(
+                      chat.chatTitle
+                    )}\` → new ID: ${migrateId}`
+                  );
+                } else {
+                  logs.push(
+                    `⚠️ Migration skipped: new chat already exists for \`${escapeMarkdown(
+                      chat.chatTitle
+                    )}\``
+                  );
+                }
               } else {
                 logs.push(
-                  `⚠ Upgrade detected for \`${escapeMarkdown(
-                    chatTitle
-                  )}\` but migrate_to_chat_id missing in response`
+                  `⚠️ Migration detected for \`${escapeMarkdown(
+                    chat.chatTitle
+                  )}\` but no migrate_to_chat_id found`
                 );
               }
             } catch (e) {
               logs.push(
-                `⚠ Failed to update upgraded group \`${escapeMarkdown(
-                  chatTitle
+                `⚠ Failed to process group upgrade for \`${escapeMarkdown(
+                  chat.chatTitle
                 )}\`: ${escapeMarkdown(e.message)}`
               );
             }
@@ -312,6 +342,24 @@ async function broadcastQuizQuestion() {
             );
             await new Promise((res) => setTimeout(res, wait));
             chat.nextQuizTime = new Date(Date.now() + wait);
+            await chat.save();
+          } else if (
+            err.response?.error_code === 504 ||
+            err.message.includes("504")
+          ) {
+            logs.push(`⚠️ 504 Timeout in ${chatTitle}, retrying after 10s`);
+            await new Promise((res) => setTimeout(res, 20000));
+            chat.nextQuizTime = new Date(Date.now() + 60 * 1000); // retry in 1 min
+            await chat.save();
+          } else if (
+            err.type === "request-timeout" ||
+            err.message.includes("network timeout") ||
+            err.message.includes("ETIMEDOUT")
+          ) {
+            logs.push(
+              `⚠️ Temporary network issue in ${chatTitle}, retrying next cycle`
+            );
+            chat.nextQuizTime = new Date(Date.now() + 5 * 60 * 1000); // retry in 5 min
             await chat.save();
           } else if (!logs.some((l) => l.includes(err.message))) {
             logs.push(

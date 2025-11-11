@@ -3,7 +3,7 @@ const bot = require("../utils/telegramBot");
 const User = require("../models/userModel");
 const { Markup } = require("telegraf");
 const eventRecordBot = require("../utils/eventRecordBot");
-
+const { sendMyScore } = require("./developer");
 // Escape Markdown for Telegram messages
 function escapeMarkdown(text) {
   if (!text) return "";
@@ -17,7 +17,9 @@ module.exports = () => {
 
       // Ignore /start in groups
       if (chatType === "group" || chatType === "supergroup") return;
-
+      if (ctx.payload === "myscore") {
+        return sendMyScore(ctx);
+      }
       const chatId = ctx.chat.id;
       const chatTitle = ctx.chat.username || ctx.from.first_name;
 
@@ -40,16 +42,30 @@ module.exports = () => {
         );
 
         return ctx.reply(
-          `👋 Welcome back, *${escapeMarkdown(first_name)}!*` +
-            `\n\nGlad to see you again. Use */help* anytime to check available commands.\n\n` +
-            `💡 Want a similar or custom bot? Contact */developer* or *@LoukyaSri*.`,
+          `📘 I’m *English Grammar Quiz Bot* 🌸\n\n` +
+            `✅ I share *English Grammar Quizzes* every hour, 24/7 — designed for *SSC, Banking, RRB,* and other *Competitive Exams.*\n\n` +
+            `📚 For *General Studies (GS)* quizzes, try @LoukyaSriBot, @APPSCQuizBot, or @TGPSCQuizBot\n` +
+            `🧮 For *Quant & Reasoning*, check @AptitudeByLoukyaBot\n\n` +
+            `💬 Join *Loukya Bots Updates* for announcements & support — @LoukyaSri\n\n` +
+            `👉 Use */help* to explore my features ✨`,
           {
             parse_mode: "Markdown",
+            disable_web_page_preview: true,
             ...Markup.inlineKeyboard([
               [
                 Markup.button.url(
                   "➕ Add me to your Group",
                   `https://t.me/${ctx.botInfo.username}?startgroup&admin=promote_members+change_info+post_messages+edit_messages+delete_messages+invite_users+restrict_members+pin_messages+manage_video_chats+manage_topics`
+                ),
+              ],
+              [
+                Markup.button.url(
+                  "🌐 Visit Website",
+                  "https://loukyasri.netlify.app/"
+                ),
+                Markup.button.url(
+                  "💝 Donate / Support",
+                  "https://loukyasri.netlify.app/#support"
                 ),
               ],
             ]),
@@ -68,18 +84,30 @@ module.exports = () => {
       });
 
       await ctx.reply(
-        `🌸 I’m *English Grammar Quiz Bot*  \n\n` +
-          `✅ I share *English Grammar Quizzes* every hour, 24/7 — for *SSC, Bank, RRB, and Other Competitive Exams.*  \n\n` +
-          `📚 For *GS quizzes*, check *@LoukyaSriBot*, *@APPSCQuizBot* or *@TGPSCQuizBot*  \n\n` +
-          `📚 For *Quant Reasoning*, check *MathsByLoukyaBot*  \n\n` +
+        `📘 I’m *English Grammar Quiz Bot* 🌸\n\n` +
+          `✅ I share *English Grammar Quizzes* every hour, 24/7 — perfect for *SSC, Bank, RRB,* and other *Competitive Exams.*\n\n` +
+          `📚 For *General Studies (GS)* quizzes, check @LoukyaSriBot, @APPSCQuizBot, or @TGPSCQuizBot\n` +
+          `🧮 For *Quant & Reasoning*, try @AptitudeByLoukyaBot\n\n` +
+          `💬 Join *Loukya Bots Updates* for latest announcements and support — @LoukyaSri\n\n` +
           `👉 Use */help* command to explore my features ✨`,
         {
           parse_mode: "Markdown",
+          disable_web_page_preview: true,
           ...Markup.inlineKeyboard([
             [
               Markup.button.url(
                 "➕ Add me to your Group",
                 `https://t.me/${ctx.botInfo.username}?startgroup&admin=promote_members+change_info+post_messages+edit_messages+delete_messages+invite_users+restrict_members+pin_messages+manage_video_chats+manage_topics`
+              ),
+            ],
+            [
+              Markup.button.url(
+                "🌐 Visit Website",
+                "https://loukyasri.netlify.app/"
+              ),
+              Markup.button.url(
+                "💝 Donate / Support",
+                "https://loukyasri.netlify.app/#support"
               ),
             ],
           ]),

@@ -9,6 +9,7 @@ connectDB()
     // 2️⃣ Load essential services first (dependencies)
     const newMember = require("./handlers/newMember");
     newMember();
+    require("./utils/globalRateLimit");
     require("./services/factsService");
     require("./services/forwardService");
     require("./services/pvtFwdService");
@@ -60,15 +61,23 @@ connectDB()
     );
 
     const { runWeeklyAdminCheck } = require("./quizUtils/adminChecker");
-    cron.schedule("45 10 * * 6", runWeeklyAdminCheck, {
+    cron.schedule("30 10 * * 3,6", runWeeklyAdminCheck, {
       timezone: "Asia/Kolkata",
     });
 
     console.log("Weekly admin check cron scheduled (Sat 5 PM IST).");
     console.log("---All cron jobs scheduled---");
+    require("./handlers/quizReply")();
   })
   .catch((err) => console.error("MongoDB connection error:", err));
 
+process.on("unhandledRejection", (err) => {
+  console.log("⚠ Unhandled rejection:", err.message);
+});
+
+process.on("uncaughtException", (err) => {
+  console.log("⚠ Uncaught exception:", err.message);
+});
 // (async () => {
 //   try {
 //     const chatTitle = "Loukya Personal Test Group";

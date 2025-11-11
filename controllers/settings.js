@@ -128,15 +128,20 @@ bot.command("settings", async (ctx) => {
     return ctx.reply("This command works only in groups!");
 
   const botIsAdmin = await isBotAdmin(ctx.chat.id);
-  if (!botIsAdmin)
-    return ctx.reply(
-      `⚠️ @EnglishByLoukyaBot isn’t an admin!\n✅ Make me admin to access settings.`
-    );
+  try {
+    if (!botIsAdmin)
+      return ctx.reply(
+        `⚠️ @EnglishByLoukyaBot isn’t an admin!\n✅ Make me admin to access settings.`
+      );
+  } catch (err) {}
 
   const userIsAdmin = await isUserAdmin(ctx);
-  if (!userIsAdmin)
-    return ctx.reply("🚫 Unauthorized. Only group admins can change settings.");
-
+  try {
+    if (!userIsAdmin)
+      return ctx.reply(
+        "🚫 Unauthorized. Only group admins can change settings."
+      );
+  } catch (err) {}
   try {
     const chatId = ctx.chat.id;
     const chat = await Chat.findOne({ chatId });
@@ -266,7 +271,11 @@ bot.on("callback_query", async (ctx) => {
     // ---- Toggle leaderboard ----
     if (data === "toggle_leaderboard") {
       chat.sendLeaderboard = !chat.sendLeaderboard;
-      if (chat.sendLeaderboard) chat.anonymousQuizzes = false;
+      if (chat.sendLeaderboard) {
+        chat.anonymousQuizzes = false;
+        chat.quizFrequencyMinutes = 60;
+        chat.nextLeaderboardTime = getRandomLeaderboardTimeIST(chat);
+      }
       await chat.save();
       await ctx.editMessageText(
         `📈 Daily Leaderboard is now: ${

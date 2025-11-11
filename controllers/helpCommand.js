@@ -9,28 +9,28 @@ bot.command("help", async (ctx) => {
 🤖 *Available Commands*:
 
 /startquiz  
-_Enable fact and quizzes broadcasts in this chat_
+_Enable quiz broadcasts._
 
 /stopquiz  
-_Disable fact and quizzes broadcasts in this chat_
+_Disable quiz broadcasts._
 
-/settopic
-_Set topic for fact and quizzes broadcasts_
+/settopic  
+_Set the topic for quiz broadcasts._
 
-/developer  
-_Show developer information_
+/myscore  
+_View your personal quiz score._
 
-/myscore
-_Check your personal quiz score_
-
-/resetscore
-_Reset all your quiz data_
+/resetscore  
+_Reset your quiz data and score._
 
 /stats  
-_View bot performance_
+_View overall bot performance and activity._
 
 /settings  
-_Change quiz interval or toggle old quiz deletion directly in the group_
+_Change quiz interval or manage old quiz deletion directly in the group._
+
+/developer  
+_View developer and bot information._
 
 /help  
 _Show this help message._

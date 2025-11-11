@@ -221,6 +221,16 @@ cron.schedule(
               await bot.telegram.sendMessage(chat.chatId, message, {
                 parse_mode: "HTML",
                 disable_web_page_preview: true,
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "🏅 See My Score Now",
+                        url: `https://t.me/EnglishByLoukyaBot?start=myscore`,
+                      },
+                    ],
+                  ],
+                },
               });
               sent = true;
 
@@ -247,6 +257,19 @@ cron.schedule(
                   }s`
                 );
                 await new Promise((res) => setTimeout(res, wait));
+              } else if (
+                err.response?.error_code === 400 ||
+                err.response?.error_code === 403 ||
+                err.message?.includes("not enough rights") ||
+                err.message?.includes("can't send messages to the chat") ||
+                err.message?.includes("CHAT_WRITE_FORBIDDEN") ||
+                err.message?.includes("chat_write_forbidden") ||
+                err.message?.includes("bot was blocked by the user") ||
+                err.message.includes("bot was kicked") ||
+                err.message.includes("kicked")
+              ) {
+                chat.sendLeaderboard = false;
+                await chat.save();
               } else {
                 console.error(
                   `❌ Error sending leaderboard to ${chat.chatTitle}:`,

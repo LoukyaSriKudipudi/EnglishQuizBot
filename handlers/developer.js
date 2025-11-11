@@ -10,28 +10,50 @@ const mongoose = require("mongoose");
 
 // Developer info
 bot.command("developer", async (ctx) => {
-  if (ctx.chat.type !== "private") {
-    try {
-      await ctx.deleteMessage();
-    } catch (err) {}
-    return;
-  }
   try {
-    await ctx.reply(
-      "👩‍💻 <b>Developer Info</b>\n\n" +
+    await ctx.replyWithHTML(
+      "👩‍💻 <b>Developer Information</b>\n\n" +
         "<blockquote>" +
         "<b>Name:</b> <code>Loukya Sri Kudipudi</code>\n" +
-        "<b>Telegram:</b> @LoukyaSri\n" +
-        "<b>Website:</b> <a href='https://bot.loukyasri.pro/'>bot.loukyasri.pro</a>\n" +
-        "<b>Portfolio:</b> <a href='https://loukyasri.pro/'>loukyasri.pro</a>" +
-        "</blockquote>\n\n" +
-        "💡 <i>Want a custom bot?</i>\n" +
-        "Contact @LoukyaSri \n\n" +
-        "✨ <b>Check out our other bots:</b>\n" +
+        "<b>Telegram:</b> <a href='https://t.me/LoukyaSri'>@LoukyaSri</a>\n" +
+        "<b>Website:</b> <a href='https://loukyasri.netlify.app/'>loukyasri.netlify.app</a>\n" +
+        "</blockquote>\n" +
+        "🌐 <b>Official Quiz Bots</b>\n" +
         "<blockquote>" +
-        "@LoukyaSriBot @TGPSCQuizBot" +
-        "</blockquote>",
-      { parse_mode: "HTML" }
+        "• <a href='https://t.me/LoukyaSriBot'>@LoukyaSriBot</a> — General Studies (EN)\n" +
+        "• <a href='https://t.me/APPSCQuizBot'>@APPSCQuizBot</a> — Andhra Pradesh (TE)\n" +
+        "• <a href='https://t.me/TGPSCQuizBot'>@TGPSCQuizBot</a> — Telangana (TE)\n" +
+        "• <a href='https://t.me/EnglishByLoukyaBot'>@EnglishByLoukyaBot</a> — English Grammar\n" +
+        "• <a href='https://t.me/AptitudeByLoukyaBot'>@AptitudeByLoukyaBot</a> — Aptitude & Reasoning" +
+        "</blockquote>\n\n" +
+        "💡 <i>Want a custom Telegram bot or educational tool?</i>\n" +
+        "Reach out directly at <a href='https://t.me/LoukyaSri'>@LoukyaSri</a>\n\n" +
+        "💖 <b>Support the Project:</b> You can help maintain the bots and hosting by donating below 👇",
+      {
+        disable_web_page_preview: true,
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "🌐 Visit Website",
+                url: "https://loukyasri.netlify.app/",
+              },
+            ],
+            [
+              {
+                text: "💝 Donate / Support",
+                url: "https://loukyasri.netlify.app/#support",
+              },
+            ],
+            [
+              {
+                text: "📞 Contact Developer",
+                url: "https://t.me/LoukyaSri",
+              },
+            ],
+          ],
+        },
+      }
     );
   } catch (err) {
     console.error("Failed to send developer info:", err.message);
@@ -186,7 +208,7 @@ bot.command("stats", async (ctx) => {
   await ctx.reply(msg, { parse_mode: "HTML" });
 });
 
-bot.command("myscore", async (ctx) => {
+async function sendMyScore(ctx) {
   if (ctx.chat.type !== "private") {
     // Fetch group settings
     const chat = await Chat.findOne({ chatId: ctx.chat.id });
@@ -261,7 +283,7 @@ bot.command("myscore", async (ctx) => {
 
     const message = `
 <blockquote>
-🏆 <b>Your Quiz Performance</b> 🏆
+🏆 <b>Your Quiz Performance</b>
 
 👤 <b>User:</b> ${displayName}
 
@@ -283,6 +305,16 @@ bot.command("myscore", async (ctx) => {
     await ctx.reply(message, {
       parse_mode: "HTML",
       disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🌐 Visit Website",
+              url: `https://loukyasri.netlify.app/`,
+            },
+          ],
+        ],
+      },
     });
   } catch (err) {
     console.error("❌ Error showing score:", err);
@@ -290,7 +322,10 @@ bot.command("myscore", async (ctx) => {
       "⚠️ Couldn't fetch your score right now. Please try again later."
     );
   }
-});
+}
+
+bot.command("myscore", sendMyScore);
+module.exports = { sendMyScore };
 
 bot.command("resetscore", async (ctx) => {
   try {
