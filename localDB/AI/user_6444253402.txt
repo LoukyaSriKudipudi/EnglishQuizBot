@@ -1,0 +1,29 @@
+
+=== 2025-11-08T01:47:48.598Z ===
+Chat: -1002230652850
+User: bhavani (6444253402)
+Prompt: Explain this English Grammar question briefly. Clarify the rule or pattern behind the correct answer and give short examples if useful. Use very simple English.
+
+Question:
+Which word is a synonym for 'UNCTUOUS'?
+
+Options:
+A. Genuinely kind
+B. Sincerely honest
+C. Excessively flattering; oily
+D. Blunt and direct
+
+Correct answer: Excessively flattering; oily
+
+Keep the explanation brief (<= 1200 characters).
+AI Response: This question asks for a word that means the same as "unctuous."
+
+The word "unctuous" describes someone who is too eager to please or is insincerely complimentary. They often come across as fake or trying too hard.
+• "Excessively flattering; oily" (Option C) perfectly captures this meaning. "Oily" here means smooth in a way that feels dishonest or insincere.
+
+Let's look at why other options are wrong:
+• A. Genuinely kind: This means truly nice, the opposite of insincere.
+• B. Sincerely honest: This means truthful, not overly flattering.
+• D. Blunt and direct: This means saying things plainly, without trying to please.
+
+Example: A salesperson who is "unctuous" might constantly praise your looks and choices, making you feel uncomfortable because it seems fake.

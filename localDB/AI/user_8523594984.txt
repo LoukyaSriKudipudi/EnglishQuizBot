@@ -1,0 +1,33 @@
+
+=== 2025-11-07T12:20:54.385Z ===
+Chat: -1003224554716
+User: /𝚍𝚎𝚟/𝚕𝚘𝚞𝚔𝚢𝚊 (8523594984)
+Prompt: Explain this English Grammar question briefly. Clarify the rule or pattern behind the correct answer and give short examples if useful. Use very simple English.
+
+Question:
+He said, 'I must call my mother now.' The reported form is:
+
+Options:
+A. He said he must call his mother now.
+B. He said he had to call his mother then.
+C. He said he must have called his mother then.
+D. He says he had to call his mother then.
+
+Correct answer: He said he had to call his mother then.
+
+Keep the explanation brief (<= 1200 characters).
+AI Response: This question is about reported speech.
+
+When you report what someone said in the past, you usually change the verb tense.
+• Rule: If the reporting verb ("He said") is in the past, verbs inside the quote often change.
+• "must" often changes to "had to".
+• "now" often changes to "then".
+
+Why the correct answer is B:
+• "He said" is past.
+• "must" changes to "had to".
+• "now" changes to "then".
+
+Example:
+Direct: She said, "I am hungry."
+Reported: She said she was hungry. (am -> was)
